@@ -95,15 +95,27 @@ app.post("/signin", async (req: Request, res: Response) => {
 });
 
 app.post("/content", userMiddleware, async (req: Request, res: Response) => {
-  const link = req.body.link;
-  const title = req.body.title;
+  const { link, title, tags } = req.body;
 
   const userId = req.userId;
   try {
+    const tagsId = [];
+
+    if (tags && tags.length > 0) {
+      for (const tagTitle of tags) {
+        let tag = await TagsModel.findOne({ title: tagTitle });
+
+        if (!tag) {
+          tag = await TagsModel.create({ title: tagTitle });
+        }
+        tagsId.push(tag._id);
+      }
+    }
+
     await ContentModel.create({
       link: link,
       title: title,
-      tags: [],
+      tags: tagsId,
       userId,
     });
 
@@ -119,10 +131,9 @@ app.post("/content", userMiddleware, async (req: Request, res: Response) => {
 
 app.get("/content", userMiddleware, async (req: Request, res: Response) => {
   const userId = req.userId;
-  const content = await ContentModel.find({ userId }).populate(
-    "userId",
-    "username -_id"
-  );
+  const content = await ContentModel.find({ userId })
+    .populate("userId", "username -_id")
+    .populate("tags", "title -_id");
 
   res.json({
     content,
