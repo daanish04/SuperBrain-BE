@@ -8,8 +8,8 @@ const UserSchema = new Schema({
 const ContentSchema = new Schema({
   link: { type: String, required: true },
   title: { type: String, required: true },
-  tags: [{ type: mongoose.Types.ObjectId, ref: "Tags" }],
-  userId: { type: mongoose.Types.ObjectId, ref: "User" },
+  tags: [{ type: Types.ObjectId, ref: "Tags" }],
+  userId: { type: Types.ObjectId, ref: "User" },
 });
 
 const TagsSchema = new Schema({
@@ -21,7 +21,7 @@ const LinkSchema = new Schema({
   userId: { type: Types.ObjectId, ref: "User" },
 });
 
-export const UserModel = mongoose.model("User", UserSchema);
-export const ContentModel = mongoose.model("Content", ContentSchema);
-export const TagsModel = mongoose.model("Tags", TagsSchema);
-export const LinkModel = mongoose.model("Link", LinkSchema);
+export const UserModel = model("User", UserSchema);
+export const ContentModel = model("Content", ContentSchema);
+export const TagsModel = model("Tags", TagsSchema);
+export const LinkModel = model("Link", LinkSchema);

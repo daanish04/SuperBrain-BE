@@ -7,6 +7,7 @@ dotenv.config();
 import { UserModel, ContentModel, TagsModel, LinkModel } from "./db";
 import { authSchema } from "./authValidation";
 import { userMiddleware } from "./middleware";
+import { random } from "./hash";
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -97,7 +98,6 @@ app.post("/content", userMiddleware, async (req: Request, res: Response) => {
   const link = req.body.link;
   const title = req.body.title;
 
-  // @ts-ignore
   const userId = req.userId;
   try {
     await ContentModel.create({
@@ -118,7 +118,6 @@ app.post("/content", userMiddleware, async (req: Request, res: Response) => {
 });
 
 app.get("/content", userMiddleware, async (req: Request, res: Response) => {
-  // @ts-ignore
   const userId = req.userId;
   const content = await ContentModel.find({ userId }).populate(
     "userId",
@@ -136,7 +135,7 @@ app.delete("/content", userMiddleware, async (req: Request, res: Response) => {
   try {
     await ContentModel.deleteMany({
       _id: id,
-      // @ts-ignore
+
       userId: req.userId,
     });
 
@@ -151,8 +150,79 @@ app.delete("/content", userMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-app.post("/brain/share", (req, res) => {});
+app.post(
+  "/brain/share",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const { share } = req.body;
+    const userId = req.userId;
+    try {
+      if (!share) {
+        await LinkModel.deleteMany({ userId });
 
-app.get("/brain/:shareLink", (req, res) => {});
+        res.json({
+          message: "Link deleted",
+        });
+        return;
+      }
+
+      const hash = random(10);
+
+      const isShared = await LinkModel.findOne({
+        userId: userId,
+      });
+
+      if (isShared) {
+        res.status(400).json({
+          message: `You've already shared this Brain at ${isShared.link}`,
+        });
+        return;
+      }
+
+      const link = await LinkModel.create({
+        link: hash,
+        userId: userId,
+      });
+
+      res.json({
+        link: `/brain/${hash}`,
+      });
+    } catch (e) {
+      res.status(500).json({
+        message: "Internal server error",
+      });
+      return;
+    }
+  }
+);
+
+app.get("/brain/:shareLink", async (req: Request, res: Response) => {
+  const hash = req.params.shareLink;
+
+  try {
+    const link = await LinkModel.findOne({ link: hash });
+
+    if (!link) {
+      res.status(404).json({
+        message: "Link not found",
+      });
+      return;
+    }
+
+    const content = await ContentModel.find({ userId: link.userId }).populate(
+      "userId",
+      "username -_id"
+    );
+
+    res.json({
+      content,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Internal server error",
+    });
+    return;
+  }
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
