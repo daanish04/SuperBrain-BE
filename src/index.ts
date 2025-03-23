@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 import { UserModel, ContentModel, TagsModel, LinkModel } from "./db";
 import { authSchema } from "./authValidation";
@@ -13,6 +14,8 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+
 mongoose
   .connect(process.env.MONGO_URI!)
   .catch((err) => console.log("MongoDB connection error :", err));
