@@ -141,9 +141,16 @@ app.get("/content", userMiddleware, async (req: Request, res: Response) => {
       .populate("userId", "username name -_id")
       .populate("tags", "title -_id");
 
-    res.json({
-      content,
-    });
+    if (content.length > 0) {
+      res.json({
+        content,
+      });
+    } else {
+      const user = await UserModel.findOne({ _id: userId });
+      res.json({
+        content: user,
+      });
+    }
   } catch (e) {
     res.status(500).json({
       message: "Internal server error",
@@ -243,19 +250,20 @@ app.get("/brain/:shareLink", async (req: Request, res: Response) => {
       return;
     }
 
-    const content = await ContentModel.find({ userId: link.userId }).populate(
-      "userId",
-      "name username -_id"
-    );
-    if (content.length === 0) {
-      res.status(404).json({
-        message: "No content found",
+    const content = await ContentModel.find({ userId: link.userId })
+      .populate("userId", "name username -_id")
+      .populate("tags", "title -_id");
+
+    if (content.length > 0) {
+      res.json({
+        content,
       });
-      return;
+    } else {
+      const user = await UserModel.findOne({ _id: link.userId });
+      res.json({
+        content: user,
+      });
     }
-    res.json({
-      content,
-    });
   } catch (e) {
     res.status(500).json({
       message: "Internal server error",

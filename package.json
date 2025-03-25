@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf dist",
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "dev": "npm run clean && npm run build && npm run start"
+    "dev": "npm run build && npm run start"
   },
   "keywords": [],
   "author": "",
