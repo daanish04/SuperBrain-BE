@@ -32,7 +32,7 @@ app.post("/signup", async (req: Request, res: Response) => {
       return;
     }
 
-    const { username, password } = parsedData.data;
+    const { name, username, password } = parsedData.data;
 
     const user = await UserModel.findOne({ username });
     if (user) {
@@ -45,6 +45,7 @@ app.post("/signup", async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await UserModel.create({
+      name: name,
       username: username,
       password: hashedPassword,
     });
@@ -98,7 +99,7 @@ app.post("/signin", async (req: Request, res: Response) => {
 });
 
 app.post("/content", userMiddleware, async (req: Request, res: Response) => {
-  const { link, title, tags } = req.body;
+  const { link, title, description, tags } = req.body;
 
   const userId = req.userId;
   try {
@@ -118,6 +119,7 @@ app.post("/content", userMiddleware, async (req: Request, res: Response) => {
     await ContentModel.create({
       link: link,
       title: title,
+      description: description,
       tags: tagsId,
       userId,
     });
@@ -134,13 +136,33 @@ app.post("/content", userMiddleware, async (req: Request, res: Response) => {
 
 app.get("/content", userMiddleware, async (req: Request, res: Response) => {
   const userId = req.userId;
-  const content = await ContentModel.find({ userId })
-    .populate("userId", "username -_id")
-    .populate("tags", "title -_id");
+  try {
+    const content = await ContentModel.find({ userId })
+      .populate("userId", "username name -_id")
+      .populate("tags", "title -_id");
 
-  res.json({
-    content,
-  });
+    res.json({
+      content,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+});
+
+app.get("/content/tags", async (req: Request, res: Response) => {
+  try {
+    const tags = await TagsModel.find({}, "title -_id");
+    res.json({
+      tags,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: "Internal server error",
+    });
+    return;
+  }
 });
 
 app.delete("/content", userMiddleware, async (req: Request, res: Response) => {
@@ -180,19 +202,17 @@ app.post(
         return;
       }
 
-      const hash = random(10);
-
       const isShared = await LinkModel.findOne({
         userId: userId,
       });
 
       if (isShared) {
-        res.status(400).json({
-          message: `You've already shared this Brain at ${isShared.link}`,
+        res.json({
+          link: `/brain/${isShared.link}`,
         });
         return;
       }
-
+      const hash = random(10);
       const link = await LinkModel.create({
         link: hash,
         userId: userId,
@@ -225,9 +245,14 @@ app.get("/brain/:shareLink", async (req: Request, res: Response) => {
 
     const content = await ContentModel.find({ userId: link.userId }).populate(
       "userId",
-      "username -_id"
+      "name username -_id"
     );
-
+    if (content.length === 0) {
+      res.status(404).json({
+        message: "No content found",
+      });
+      return;
+    }
     res.json({
       content,
     });
