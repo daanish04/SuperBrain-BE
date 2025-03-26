@@ -2,7 +2,7 @@ import z from "zod";
 
 export const authSchema = z.object({
   name: z.string(),
-  username: z.string().email("Enter a valid email or username"),
+  username: z.string().email("Enter a valid email"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters long")
