@@ -14,18 +14,21 @@ SuperBrain-BE is the backend for the SuperBrain application, built with Node.js,
 ## Setup Instructions
 
 1. Clone the Repository
+
 ```bash
-git clone https://github.com/daanish04/SuperBrain-BE
+git clone https://github.com/daanish04/SuperBrain-BE.git
 cd SuperBrain-BE
 ```
 
 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
 3. Configure Environment Variables
-Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory:
+
 ```env
 MONGO_URI=your_mongo_connection_string
 PORT=3000
@@ -33,27 +36,30 @@ JWT_SECRET=your_secret_key
 ```
 
 4. Run Locally
+
 ```bash
 npm run dev
 ```
+
 Backend will be available at `http://localhost:3000`
 
 ## API Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-| ------ | -------- | ----------- | ------------- |
-| POST | /signup | Register new user | No |
-| POST | /signin | User login | No |
-| POST | /content | Create content | Yes |
-| GET | /content | Get user's content | Yes |
-| DELETE | /content | Delete content | Yes |
-| GET | /content/tags | Get all tags | No |
-| POST | /brain/share | Share or remove share link | Yes |
-| GET | /brain/:shareLink | Get public shared content | No |
+| Method | Endpoint          | Description                | Auth Required |
+| ------ | ----------------- | -------------------------- | ------------- |
+| POST   | /signup           | Register new user          | No            |
+| POST   | /signin           | User login                 | No            |
+| POST   | /content          | Create content             | Yes           |
+| GET    | /content          | Get user's content         | Yes           |
+| DELETE | /content          | Delete content             | Yes           |
+| GET    | /content/tags     | Get all tags               | No            |
+| POST   | /brain/share      | Share or remove share link | Yes           |
+| GET    | /brain/:shareLink | Get public shared content  | No            |
 
 ## Example
 
 Request:
+
 ```http
 POST /signin
 {
@@ -63,6 +69,7 @@ POST /signin
 ```
 
 Response:
+
 ```json
 {
   "token": "JWT_TOKEN"
